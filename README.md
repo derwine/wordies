@@ -10,7 +10,7 @@
                                       
 ```
 
-An unlimited 5 letter word guessing game, inpired by <a href="https://www.nytimes.com/games/wordle/index.html" target="_blank">Wordle<a/>
+An unlimited 5 letter word guessing game, inspired by <a href="https://www.nytimes.com/games/wordle/index.html" target="_blank">Wordle<a/>
 
 <h2>Installation</h2>
 You will need <a href="https://python-poetry.org/">Poetry</a>
@@ -19,12 +19,12 @@ You will need <a href="https://python-poetry.org/">Poetry</a>
 pip install poetry
 ```
 
-clone the repository and run the following command to add dependencies
+Clone the repository and run the following command to add dependencies
 ```
 poetry install
 ```
 
-after installing start the game by running the following command
+After installing start the game by running the following command
 ```
 poetry run start-game
 ```
@@ -48,8 +48,8 @@ The game has a menu if you type *[command] (no spaces):
 *debug
 ```
 
-simply type * to see the menu options.
+Simply type * to see the menu options.
 
 * CLUE: will display the first and last letters of the answer
 * DEBUG will show the answer and other information
-* Use ctrl+C to exit
+* Use ctrl+C to exit the game

@@ -11,7 +11,6 @@ from termcolor import colored
 just_fix_windows_console()
 web2lowerset = get_english_words_set(['web2'], lower=True)
 
-# Clearing the Screen
 keyboard_rows = []
 keyboard_rows.append("QWERTYUIOP")
 keyboard_rows.append(" ASDFGHJKL")
@@ -49,6 +48,18 @@ class Wordies():
     self.show_clue = False
 
   def debug(self):
+    """
+    Prints debugging information about the current game state.
+
+    This function prints the number of guesses left and the current answer.
+    It is intended for use during development and debugging.
+
+    Parameters:
+    None
+
+    Returns:
+    None
+    """
     print("Debug:")
     print("guesses_left: ", self.max_guesses - self.guesses_used)
     print("answer: ", self.answer)
@@ -67,12 +78,23 @@ class Wordies():
     return "on_black"
 
   def guessWord(self):
+    """
+    This function handles the main game logic for guessing a word.
+    It continues to prompt the user for guesses until either the word is correctly guessed or the maximum number of guesses is reached.
+
+    Parameters:
+    None
+
+    Returns:
+    None
+    """
     while not self.guess_correct and self.guesses_used < self.max_guesses:
       guess = input("Guess a Word ->: ").lower().strip()
       if self.validateGuess(guess):
         self.letters_guessed.update(list(guess.lower()))
         self.addGuessToBoard(guess)
       self.printBoard()
+
     if self.guess_correct:
       print("You Won in " + str(self.guesses_used) + " Guesses")
     else:
@@ -100,6 +122,19 @@ class Wordies():
 
   @staticmethod
   def printError(error):
+    """
+    Prints an error message to the console based on the given error code.
+
+    Parameters:
+    error (str): The error code indicating the type of error. It can be one of the following:
+        - "BAD_LEN": The guess is not 5 letters long.
+        - "ONLY_ABC": The guess contains letters outside the range A-Z.
+        - "NOT_A_WORD": The guess is not in our word list.
+        - Any other value: An unspecified error.
+
+    Returns:
+    None
+    """
     top = colored("Invalid guess!", "white", "on_red")
     if error == "BAD_LEN":
       detail = colored("Word must be 5 letters long", "yellow", "on_dark_grey")
@@ -193,6 +228,16 @@ class Wordies():
       print(f"CLUE: {self.answer[0].upper()}" + "*" * 3 + f"{self.answer[-1].upper()}")
 
   def start(self):
+    """
+    Begins the game by initializing the game board, selecting a random word,
+    displaying the board, allowing the player to guess, and resetting the game.
+
+    Parameters:
+    None
+
+    Returns:
+    None
+    """
     self.setInitialDisplay()
     self.setWordAnswer()
     self.printBoard()
