@@ -1,5 +1,15 @@
 <h1>Wordies</h1>
 
+ ```                       _ _           
+                       | (_)          
+ __      _____  _ __ __| |_  ___  ___ 
+ \ \ /\ / / _ \| '__/ _` | |/ _ \/ __|
+  \ V  V / (_) | | | (_| | |  __/\__ \
+   \_/\_/ \___/|_|  \__,_|_|\___||___/
+                                      
+                                      
+```
+
 An unlimited 5 letter word guessing game, inpired by <a href="https://www.nytimes.com/games/wordle/index.html" target="_blank">Wordle<a/>
 
 <h2>Installation</h2>
@@ -20,6 +30,7 @@ poetry run start-game
 ```
 
 <h2> Game Rules</h2>
+<img src="screenshot.png" width=400 height=300/>
 
 - The user gets 6 chances to guess a 5 letter word.
 

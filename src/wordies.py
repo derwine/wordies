@@ -1,4 +1,3 @@
-from pdb import set_trace
 import random
 import re
 import time
@@ -82,7 +81,6 @@ class Wordies():
 
   def processMenu(self, prompt):
     prompt = prompt.lower()
-    #set_trace()
     if prompt == "*clue":
       self.show_clue = not self.show_clue
     elif prompt == "*debug":
@@ -102,7 +100,6 @@ class Wordies():
 
   @staticmethod
   def printError(error):
-    #set_trace()
     top = colored("Invalid guess!", "white", "on_red")
     if error == "BAD_LEN":
       detail = colored("Word must be 5 letters long", "yellow", "on_dark_grey")
@@ -143,7 +140,6 @@ class Wordies():
     _ = system('cls') if name == 'nt' else system('clear')
 
   def validateGuess(self, guess):
-    #set_trace()
     if guess[0] == "*":
       self.processMenu(guess)
       return False
