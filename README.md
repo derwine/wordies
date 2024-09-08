@@ -13,7 +13,7 @@
 An unlimited 5 letter word guessing game, inpired by <a href="https://www.nytimes.com/games/wordle/index.html" target="_blank">Wordle<a/>
 
 <h2>Installation</h2>
-You will need <a ghref="https://python-poetry.org/">Poetry</p>
+You will need <a href="https://python-poetry.org/">Poetry</a>
 
 ```
 pip install poetry
