@@ -26,7 +26,6 @@ TODO: For README, explain customizability
 TODO: Consider a web version with a python template language or convert to javascript.
 """
 
-
 class Wordies():
   def __init__(self, word_list) -> None:
     self.guesses_used = 0
@@ -65,8 +64,8 @@ class Wordies():
       if letter in self.answer.lower():
         return "on_green"
       else:
-        return "on_yellow"
-    return "on_light_grey"
+        return "on_light_grey"
+    return "on_black"
 
   def guessWord(self):
     while not self.guess_correct and self.guesses_used < self.max_guesses:

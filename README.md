@@ -1,6 +1,6 @@
 <h1>Wordies</h1>
 
-An unlimited 5 letter word guessing game, inpired by < a href="https://www.nytimes.com/games/wordle/index.html" target="_blank">Wordle<a/>
+An unlimited 5 letter word guessing game, inpired by <a href="https://www.nytimes.com/games/wordle/index.html" target="_blank">Wordle<a/>
 
 The user gets 6 chances to guess a 5 letter word.
 
@@ -8,8 +8,8 @@ The interface is entirely command line and uses colorama and termcolor for the U
 
 The game has a menu if you type:
 ```
-*clue
-*debug
+* clue
+* debug
 ```
 simply type * to see the menu options.
 
