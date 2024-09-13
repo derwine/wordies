@@ -1,7 +1,7 @@
 import random
 import re
 import time
-from os import name, system
+from os import name, system, sys
 
 import pyinputplus as pyip
 from colorama import just_fix_windows_console
@@ -89,17 +89,20 @@ class Wordies():
     None
     """
     while not self.guess_correct and self.guesses_used < self.max_guesses:
-      guess = input("Guess a Word ->: ").lower().strip()
+      guess = pyip.inputStr("Guess a Word ->: ").lower().strip()
       if self.validateGuess(guess):
         self.letters_guessed.update(list(guess.lower()))
         self.addGuessToBoard(guess)
       self.printBoard()
+      if self.guess_correct:
+        break
 
     if self.guess_correct:
       print("You Won in " + str(self.guesses_used) + " Guesses")
     else:
       if self.guesses_used == self.max_guesses:
         print(f"Out of guesses, the answer was {self.answer}")
+    self.reset()
 
   def processMenu(self, prompt):
     prompt = prompt.lower()
@@ -107,18 +110,22 @@ class Wordies():
       self.show_clue = not self.show_clue
     elif prompt == "*debug":
       self.show_debug = not self.show_debug
+    elif prompt.startswith("*quit"):
+      print("Goodbye!")
+      time.sleep(1)
+      sys.exit(0)
     else:
       print("menu: use *clue or *debug or guess a word")
       time.sleep(2)
 
   def reset(self):
     answer = pyip.inputYesNo("Play again?")
-    if answer != "yes":
-      print("Thanks for playing!")
-      return
-    else:
+    print(f"{answer}")
+    time.sleep(3)
+    if answer == "yes":
       self.__init__(self.answers)
       self.start()
+    sys.exit(0)
 
   @staticmethod
   def printError(error):
