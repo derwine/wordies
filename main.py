@@ -3,6 +3,7 @@ import argparse
 from src import wordies
 from src import clues
 from src.browser_app import BrowserApp
+from src.textual_app import WordiesTextualApp
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -11,6 +12,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--browser",
         action="store_true",
         help="Launch a local browser version instead of the terminal UI.",
+    )
+    parser.add_argument(
+        "--classic",
+        action="store_true",
+        help="Use the legacy prompt-driven terminal UI instead of Textual.",
     )
     parser.add_argument(
         "--host",
@@ -32,8 +38,12 @@ def start() -> None:
         BrowserApp(clues.answers, host=args.host, port=args.port).serve()
         return
 
-    game = wordies.Wordies(clues.answers)
-    game.start()
+    if args.classic:
+        game = wordies.Wordies(clues.answers)
+        game.start()
+        return
+
+    WordiesTextualApp(clues.answers).run()
 
 
 if __name__ == "__main__":

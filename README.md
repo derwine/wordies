@@ -9,12 +9,17 @@ __      _____  _ __ __| |_  ___  ___
 
 An unlimited five-letter word guessing game for the terminal, inspired by <a href="https://www.nytimes.com/games/wordle/index.html" target="_blank">Wordle</a>.
 
+## Terminal UI
+
+![Wordies Textual terminal UI](docs/images/wordies-textual-ui.svg)
+
 ## Highlights
 
-- Modern terminal UI powered by <a href="https://github.com/Textualize/rich" target="_blank">Rich</a>
+- Modern terminal UI powered by <a href="https://textual.textualize.io/" target="_blank">Textual</a>
+- Browser and terminal modes now share a closely matched play experience
 - Wordle-style duplicate letter scoring
 - Optional clue and debug modes
-- Session histogram that tracks how many guesses your wins took
+- Recent stats tracking for wins, losses, and guess counts
 - Curated five-letter answers built from the included word list
 
 ## Installation
@@ -32,10 +37,18 @@ Start the game with:
 poetry run start-game
 ```
 
+That now launches the modern Textual terminal UI by default.
+
 Launch the local browser version with:
 
 ```bash
 poetry run start-game --browser
+```
+
+If you want the older prompt-driven terminal mode:
+
+```bash
+poetry run start-game --classic
 ```
 
 ## How To Play
@@ -45,6 +58,7 @@ poetry run start-game --browser
 - Amber means the letter exists in the answer but is in the wrong spot.
 - Gray means the letter is not in the answer.
 - Use `Ctrl+C` to quit at any time.
+- In the Textual terminal UI, you can also use buttons and keyboard shortcuts for clue, stats, debug, help, and new round.
 
 ## Commands
 
@@ -53,7 +67,16 @@ Type one of these commands at the guess prompt:
 - `*menu` shows the available commands
 - `*clue` toggles a first-letter and last-letter clue
 - `*debug` toggles debug information for development
+- `*stats` opens the recent performance modal
+- `*new` starts a fresh round
 - `*quit` exits the game
+
+## Terminal Modes
+
+- `poetry run start-game` runs the Textual terminal app
+- `poetry run start-game --classic` runs the earlier Rich/prompt version
+- Textual shortcuts: `c` toggles clue, `d` toggles debug, `s` opens stats, `n` starts a new round, `?` opens help, and `q` quits
+- The Textual app mirrors the browser flow with a win banner, hidden guess form after a win, highlighted `New Round`, and a stats popup backed by a local history file
 
 ## Browser Mode
 
@@ -80,11 +103,11 @@ The project is intentionally small, so it is easy to tweak:
 
 ## Future UI Directions
 
-If you want the project to feel even more modern, these are the best next steps:
+If you want to keep pushing the feel of the app, these are the best next steps:
 
-- Stay in the terminal and move to <a href="https://textual.textualize.io/" target="_blank">Textual</a> for layouts, key bindings, and richer interactions
-- Build a lightweight browser version with <a href="https://nicegui.io/" target="_blank">NiceGUI</a> if you want a Python-first web UI
-- Explore <a href="https://reflex.dev/" target="_blank">Reflex</a> if you want a more app-like Python web stack with component-driven pages
+- Add richer Textual motion, like per-tile flips or staggered keyboard updates, now that the terminal UI already mirrors the browser layout
+- Build a dedicated React frontend if you want the browser version to graduate from embedded HTML to a fuller component-driven app
+- Explore <a href="https://reflex.dev/" target="_blank">Reflex</a> or <a href="https://nicegui.io/" target="_blank">NiceGUI</a> if you want a Python-first web stack with more app structure
 
 ## Word List Credit
 
