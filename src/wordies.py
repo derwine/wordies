@@ -1,252 +1,259 @@
-import random
-import re
-import time
-from os import name, system, sys
+from __future__ import annotations
 
-import pyinputplus as pyip
-from colorama import just_fix_windows_console
-from english_words import get_english_words_set
-from termcolor import colored
+from collections import Counter
+from typing import Iterable
 
-just_fix_windows_console()
-web2lowerset = get_english_words_set(['web2'], lower=True)
+from rich.console import Console, Group
+from rich.panel import Panel
+from rich.prompt import Confirm, Prompt
+from rich.table import Table
+from rich.text import Text
 
-keyboard_rows = []
-keyboard_rows.append("QWERTYUIOP")
-keyboard_rows.append(" ASDFGHJKL")
-keyboard_rows.append("   ZXCVBNM")
-"""
-TODO: Print a head with rules and *menu
-TODO: Add a console histogram of correct guess frequency
-TODO: Prettify prompts and errors with colored. 
-TODO: Keep everything lowercase until printing
-TODO: For README, explain customizability
-TODO: Consider a web version with a python template language or convert to javascript.
-"""
+from src.game_engine import (
+    KEYBOARD_ROWS,
+    GameSession,
+    LetterState,
+    evaluate_guess,
+    normalize_answers,
+)
 
-class Wordies():
-  def __init__(self, word_list) -> None:
-    self.guesses_used = 0
-    self.letters_guessed = set()
-    self.max_guesses = 6
-    self.answer = ""
-    self.answer_len = 5
-    self.answers = word_list
-    self.board = []
-    self.guess_correct = False
-    self.valid_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    self.display = {}
-    self.DEFAULT_COLOR = "white"
-    self.CORRECT_PLACE_BG = "green"
-    self.WRONG_PLACE_BG = "on_yellow"
-    self.EMPTY_SQUARE = "[   ]"
-    self.EMPTY_SQUARE_BG = "on_blue"
-    self.RIGHT_PLACE_BG = "on_green"
-    self.WRONG_LETTER_BG = "on_light_grey"
-    self.keyboard_rows = keyboard_rows
-    self.show_debug = False
-    self.show_clue = False
 
-  def debug(self):
-    """
-    Prints debugging information about the current game state.
-
-    This function prints the number of guesses left and the current answer.
-    It is intended for use during development and debugging.
-
-    Parameters:
-    None
-
-    Returns:
-    None
-    """
-    print("Debug:")
-    print("guesses_left: ", self.max_guesses - self.guesses_used)
-    print("answer: ", self.answer)
-
-  def setWordAnswer(self):
-    rand_index = random.randint(0, len(self.answers) - 1)
-    self.answer = self.answers[rand_index].lower()
-
-  def setKeybordLetterBg(self, letter):
-    letter = letter.lower()
-    if letter in self.letters_guessed:
-      if letter in self.answer.lower():
-        return "on_green"
-      else:
-        return "on_light_grey"
-    return "on_black"
-
-  def guessWord(self):
-    """
-    This function handles the main game logic for guessing a word.
-    It continues to prompt the user for guesses until either the word is correctly guessed or the maximum number of guesses is reached.
-
-    Parameters:
-    None
-
-    Returns:
-    None
-    """
-    while not self.guess_correct and self.guesses_used < self.max_guesses:
-      guess = pyip.inputStr("Guess a Word ->: ").lower().strip()
-      if self.validateGuess(guess):
-        self.letters_guessed.update(list(guess.lower()))
-        self.addGuessToBoard(guess)
-      self.printBoard()
-      if self.guess_correct:
-        break
-
-    if self.guess_correct:
-      print("You Won in " + str(self.guesses_used) + " Guesses")
-    else:
-      if self.guesses_used == self.max_guesses:
-        print(f"Out of guesses, the answer was {self.answer}")
-    self.reset()
-
-  def processMenu(self, prompt):
-    prompt = prompt.lower()
-    if prompt == "*clue":
-      self.show_clue = not self.show_clue
-    elif prompt == "*debug":
-      self.show_debug = not self.show_debug
-    elif prompt.startswith("*quit"):
-      print("Goodbye!")
-      time.sleep(1)
-      sys.exit(0)
-    else:
-      print("menu: use *clue or *debug or guess a word")
-      time.sleep(2)
-
-  def reset(self):
-    answer = pyip.inputYesNo("Play again?")
-    print(f"{answer}")
-    time.sleep(3)
-    if answer == "yes":
-      self.__init__(self.answers)
-      self.start()
-    sys.exit(0)
-
-  @staticmethod
-  def printError(error):
-    """
-    Prints an error message to the console based on the given error code.
-
-    Parameters:
-    error (str): The error code indicating the type of error. It can be one of the following:
-        - "BAD_LEN": The guess is not 5 letters long.
-        - "ONLY_ABC": The guess contains letters outside the range A-Z.
-        - "NOT_A_WORD": The guess is not in our word list.
-        - Any other value: An unspecified error.
-
-    Returns:
-    None
-    """
-    top = colored("Invalid guess!", "white", "on_red")
-    if error == "BAD_LEN":
-      detail = colored("Word must be 5 letters long", "yellow", "on_dark_grey")
-    elif error == "ONLY_ABC":
-      detail = colored("Word must only contain letters from A-Z", "white",
-                       "on_blue")
-    elif error == "NOT_A_WORD":
-      detail = colored("This Guess is not in our word list", "black",
-                       "on_white")
-    else:
-      detail = colored("Try Again!")
-    print(top + "\n" + detail)
-    time.sleep(2)
-
-  def addGuessToBoard(self, guess):
-    guess_row = []
-    for i in range(len(guess)):
-      if guess[i] in self.answer:
-        bg = self.RIGHT_PLACE_BG if guess[i] == self.answer[
-            i] else self.WRONG_PLACE_BG
-        guess_row.append({
-            "letter": "[ " + guess[i] + " ]",
-            "color": self.DEFAULT_COLOR,
-            "bg": bg
-        })
-      else:
-        guess_row.append({
-            "letter": "[ " + guess[i] + " ]",
-            "color": self.DEFAULT_COLOR,
-            "bg": self.WRONG_LETTER_BG
-        })
-
-    self.display[self.guesses_used] = guess_row
-    self.guesses_used += 1
-
-  @staticmethod
-  def clear():
-    _ = system('cls') if name == 'nt' else system('clear')
-
-  def validateGuess(self, guess):
-    if guess[0] == "*":
-      self.processMenu(guess)
-      return False
-    elif guess == self.answer:
-      self.guess_correct = True
-      return True
-    elif len(guess) != 5:
-      self.printError("BAD_LEN")
-      return False
-    elif guess.lower() not in web2lowerset:
-      self.printError("NOT_A_WORD")
-      return False
-    elif re.search(guess, "[^A-Z]"):
-      self.printError("ONLY_ABC")
-      return False
-    return True
-
-  def setInitialDisplay(self):
-    empty_tile = {
-        'letter': self.EMPTY_SQUARE,
-        'color': self.DEFAULT_COLOR,
-        'bg': self.EMPTY_SQUARE_BG
+class Wordies:
+    EMPTY_TILE_STYLE = "bold white on rgb(31,41,55)"
+    ABSENT_TILE_STYLE = "bold white on rgb(107,114,128)"
+    PRESENT_TILE_STYLE = "bold white on rgb(180,126,17)"
+    CORRECT_TILE_STYLE = "bold white on rgb(22,163,74)"
+    PANEL_BORDER_STYLE = "bright_cyan"
+    STATUS_STYLES = {
+        "info": "bold cyan",
+        "success": "bold green",
+        "warning": "bold yellow",
+        "error": "bold red",
     }
-    row = [empty_tile for i in range(self.answer_len)]
-    self.display = [row for j in range(self.max_guesses)]
+    def __init__(self, word_list: Iterable[str], console: Console | None = None) -> None:
+        self.console = console or Console()
+        self.answers = normalize_answers(word_list)
+        self.show_debug = False
+        self.show_clue = False
+        self.completed_games_guesses: list[int] = []
+        self.status_message = "Guess a five-letter word."
+        self.status_kind = "info"
+        self.game = GameSession(self.answers)
 
-  def printKeyboard(self):
-    print("\n")
-    for row in keyboard_rows:
-      print_row = ""
-      for letter in row:
-        if letter == " ":
-          print_row += letter * 3
+    def start_new_round(self) -> None:
+        self.game.reset_round()
+        self.set_status("Guess a five-letter word.", "info")
+
+    def set_status(self, message: str, kind: str = "info") -> None:
+        self.status_message = message
+        self.status_kind = kind
+
+    def tile_style(self, state: LetterState) -> str:
+        return {
+            LetterState.EMPTY: self.EMPTY_TILE_STYLE,
+            LetterState.ABSENT: self.ABSENT_TILE_STYLE,
+            LetterState.PRESENT: self.PRESENT_TILE_STYLE,
+            LetterState.CORRECT: self.CORRECT_TILE_STYLE,
+        }[state]
+
+    def render_tile(self, letter: str = "", state: LetterState = LetterState.EMPTY) -> Text:
+        display = f"[ {letter.upper() if letter else ' '} ]"
+        return Text(display, style=self.tile_style(state), justify="center")
+
+    def build_header_panel(self) -> Panel:
+        help_text = Text()
+        help_text.append("Guess the hidden five-letter word in six tries.\n", style="bold white")
+        help_text.append("Commands: ", style="bold cyan")
+        help_text.append("*menu", style="bold white")
+        help_text.append(", ")
+        help_text.append("*clue", style="bold white")
+        help_text.append(", ")
+        help_text.append("*debug", style="bold white")
+        help_text.append(", ")
+        help_text.append("*quit", style="bold white")
+        help_text.append("\n")
+        help_text.append("Legend: ", style="bold cyan")
+        help_text.append("green = correct", style=self.CORRECT_TILE_STYLE)
+        help_text.append("  ")
+        help_text.append("amber = present", style=self.PRESENT_TILE_STYLE)
+        help_text.append("  ")
+        help_text.append("gray = absent", style=self.ABSENT_TILE_STYLE)
+        return Panel(
+            help_text,
+            title="WORDIES",
+            border_style=self.PANEL_BORDER_STYLE,
+            padding=(1, 2),
+        )
+
+    def build_board(self) -> Panel:
+        board = Table.grid(padding=(0, 1))
+        for _ in range(self.game.answer_len):
+            board.add_column(justify="center")
+        for row in self.game.board:
+            board.add_row(*(self.render_tile(tile.letter, tile.state) for tile in row))
+        return Panel(board, title="Board", border_style=self.PANEL_BORDER_STYLE)
+
+    def build_keyboard(self) -> Panel:
+        keyboard = Table.grid(padding=(0, 0))
+        keyboard.add_column()
+        for row in KEYBOARD_ROWS:
+            line = Text()
+            for letter in row:
+                if letter == " ":
+                    line.append("  ")
+                    continue
+                state = self.game.keyboard_state[letter.lower()]
+                line.append_text(self.render_tile(letter, state))
+                line.append(" ")
+            keyboard.add_row(line)
+        return Panel(keyboard, title="Keyboard", border_style=self.PANEL_BORDER_STYLE)
+
+    def build_status_panel(self) -> Panel:
+        style = self.STATUS_STYLES.get(self.status_kind, self.STATUS_STYLES["info"])
+        status = Text(self.status_message, style=style)
+        status.append(
+            f"\nGuesses left: {self.game.max_guesses - self.game.guesses_used}",
+            style="white",
+        )
+        return Panel(status, title="Status", border_style=self.PANEL_BORDER_STYLE)
+
+    def build_clue_panel(self) -> Panel | None:
+        if not self.show_clue:
+            return None
+        clue = self.game.clue()
+        return Panel(
+            Text(clue, style="bold yellow"),
+            title="Clue",
+            border_style="yellow",
+        )
+
+    def build_debug_panel(self) -> Panel | None:
+        if not self.show_debug:
+            return None
+        debug_text = Text()
+        debug_text.append(f"Answer: {self.game.answer.upper()}\n", style="bold magenta")
+        debug_text.append(f"Answers available: {len(self.answers)}\n", style="white")
+        debug_text.append("Validation source: english_words web2 + answers", style="white")
+        return Panel(debug_text, title="Debug", border_style="magenta")
+
+    def build_histogram_panel(self) -> Panel:
+        histogram = Table.grid(expand=True)
+        histogram.add_column(justify="right", width=2)
+        histogram.add_column()
+        histogram.add_column(justify="right", width=2)
+
+        counts = Counter(self.completed_games_guesses)
+        for guess_number in range(1, self.game.max_guesses + 1):
+            count = counts[guess_number]
+            bar = "■" * count if count else "·"
+            histogram.add_row(
+                Text(str(guess_number), style="bold cyan"),
+                Text(bar, style="bold green" if count else "dim"),
+                Text(str(count), style="white"),
+            )
+
+        title = "Win Histogram"
+        if not self.completed_games_guesses:
+            title = "Win Histogram (first win pending)"
+        return Panel(histogram, title=title, border_style=self.PANEL_BORDER_STYLE)
+
+    def render(self) -> None:
+        self.console.clear()
+        panels = [
+            self.build_header_panel(),
+            self.build_board(),
+            self.build_keyboard(),
+            self.build_status_panel(),
+            self.build_histogram_panel(),
+        ]
+        clue_panel = self.build_clue_panel()
+        if clue_panel:
+            panels.append(clue_panel)
+        debug_panel = self.build_debug_panel()
+        if debug_panel:
+            panels.append(debug_panel)
+        self.console.print(Group(*panels))
+
+    def record_guess(self, guess: str) -> None:
+        error, accepted = self.game.submit_guess(guess)
+        if error or not accepted:
+            raise ValueError(error or "Guess was not accepted.")
+
+    def process_menu(self, command: str) -> None:
+        if command == "*menu":
+            self.set_status("Commands: *menu, *clue, *debug, *quit", "info")
+        elif command == "*clue":
+            self.show_clue = not self.show_clue
+            state = "enabled" if self.show_clue else "disabled"
+            self.set_status(f"Clue mode {state}.", "warning")
+        elif command == "*debug":
+            self.show_debug = not self.show_debug
+            state = "enabled" if self.show_debug else "disabled"
+            self.set_status(f"Debug mode {state}.", "warning")
+        elif command == "*quit":
+            self.console.print("[bold cyan]Thanks for playing Wordies.[/]")
+            raise SystemExit(0)
         else:
-          bg = self.setKeybordLetterBg(letter)
-          print_row += colored("[ " + letter.upper() + " ]", "white", bg)
-      print(print_row)
+            self.set_status("Unknown command. Type *menu to see the options.", "error")
 
-  def printBoard(self):
-    Wordies.clear()
-    for i in range(len(self.display)):
-      line = ""
-      for j in self.display[i]:
-        text = colored(j["letter"].upper(), j["color"], j["bg"])
-        line += text
-      print(f"\n{line}")
-    self.printKeyboard()
-    if self.show_debug:
-      self.debug()
-    if self.show_clue:
-      print(f"CLUE: {self.answer[0].upper()}" + "*" * 3 + f"{self.answer[-1].upper()}")
+    def validate_guess(self, guess: str) -> str | None:
+        return self.game.validate_guess(guess)
 
-  def start(self):
-    """
-    Begins the game by initializing the game board, selecting a random word,
-    displaying the board, allowing the player to guess, and resetting the game.
+    def prompt_for_guess(self) -> str:
+        return Prompt.ask("[bold cyan]Guess a word[/]").strip().lower()
 
-    Parameters:
-    None
+    def finish_round(self) -> bool:
+        if self.game.guess_correct:
+            self.completed_games_guesses.append(self.game.guesses_used)
+            self.set_status(f"You won in {self.game.guesses_used} guesses.", "success")
+        else:
+            self.set_status(
+                f"Out of guesses. The answer was {self.game.answer.upper()}.",
+                "error",
+            )
 
-    Returns:
-    None
-    """
-    self.setInitialDisplay()
-    self.setWordAnswer()
-    self.printBoard()
-    self.guessWord()
-    self.reset()
+        self.render()
+        play_again = Confirm.ask("[bold cyan]Play again?[/]", default=True)
+        if play_again:
+            self.start_new_round()
+            return True
+
+        self.console.print("[bold cyan]Thanks for playing Wordies.[/]")
+        return False
+
+    def start(self) -> None:
+        while True:
+            self.start_new_round()
+            while not self.game.guess_correct and self.game.guesses_used < self.game.max_guesses:
+                self.render()
+                guess = self.prompt_for_guess()
+
+                if not guess:
+                    self.set_status("Enter a five-letter word to keep playing.", "error")
+                    continue
+
+                if guess.startswith("*"):
+                    self.process_menu(guess)
+                    continue
+
+                validation_error = self.validate_guess(guess)
+                if validation_error:
+                    self.set_status(validation_error, "error")
+                    continue
+
+                self.record_guess(guess)
+                if self.game.guess_correct:
+                    self.set_status("Solved.", "success")
+                else:
+                    self.set_status("Keep going.", "info")
+
+            if not self.finish_round():
+                break
+
+
+def main() -> None:
+    raise SystemExit("Run the game via main.py or the Poetry entry point.")
+
+
+if __name__ == "__main__":
+    main()

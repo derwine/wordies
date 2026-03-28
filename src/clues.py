@@ -440,4 +440,10 @@ popular_words = [
     'yes', 'yesterday', 'yet', 'yield', 'you', 'young', 'your', 'yours',
     'yourself', 'youth', 'zone'
 ]
-answers = list(filter(lambda x: len(x) == 5, popular_words))
+answers = tuple(
+    dict.fromkeys(
+        word.lower()
+        for word in popular_words
+        if len(word) == 5 and word.isalpha()
+    )
+)
