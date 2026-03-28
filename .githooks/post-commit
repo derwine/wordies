@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+
+echo "Post-commit: running Wordies regression checks..."
+"$ROOT_DIR/scripts/run_regression_checks.sh"

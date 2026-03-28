@@ -1,18 +1,15 @@
 [tool.poetry]
 name = "wordies"
 version = "0.1.0"
-description = "\"A Word Guessing Game in Python. Inpired by wordle."
+description = "A polished five-letter word guessing game for the terminal."
 authors = ["Derwin Emmanuel <derwin.emmanuel@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-pyinputplus = "^0.2.12"
-colorama = "^0.4.6"
 english-words = "^2.0.1"
-termcolor = "^2.4.0"
-
+rich = "^14.2.0"
 
 [build-system]
 requires = ["poetry-core"]
